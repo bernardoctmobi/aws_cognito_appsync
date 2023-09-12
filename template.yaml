@@ -1,0 +1,128 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  ApiName:
+    Type: String
+    Default: ProductsAppsyncApi
+  TableArn:
+    Description: Arn della tabella "ProductsTable"
+    Type: String
+    Default: arn:aws:dynamodb:eu-west-1:923125397052:table/ProductsTable
+  TableName:
+    Type: String
+    Default: ProductsTable
+
+Resources:
+  AppsyncApiPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      MfaConfiguration: "OFF"
+      UserPoolName: AppsyncApiPool
+
+  PoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref AppsyncApiPool
+      AccessTokenValidity: 5
+      TokenValidityUnits:
+        AccessToken: minutes
+
+  GraphQLApi:
+    Type: AWS::Serverless::GraphQLApi
+    Properties:
+      Auth:
+        Type: AMAZON_COGNITO_USER_POOLS
+        UserPool:
+          AwsRegion: !Sub ${AWS::Region}
+          UserPoolId: !Ref AppsyncApiPool
+          DefaultAction: ALLOW
+      DataSources:
+        DynamoDb:
+          ProductsDataSource:
+            TableName: !Ref TableName
+            TableArn: !Ref TableArn
+      Functions:
+        ###LISTA BRAND
+        brandsList:
+          Runtime:
+            Name: APPSYNC_JS
+            Version: 1.0.0
+          DataSource: ProductsDataSource
+          CodeUri: ./graphql_api/queries/brandsList.js
+        ###SINGOLO PRODOTTO
+        getProduct:
+          Runtime:
+            Name: APPSYNC_JS
+            Version: 1.0.0
+          DataSource: ProductsDataSource
+          CodeUri: ./graphql_api/queries/getProduct.js
+        ###LISTA PRODOTTI DI UN BRAND SPECIFICATO
+        productsByBrand:
+          Runtime:
+            Name: APPSYNC_JS
+            Version: 1.0.0
+          DataSource: ProductsDataSource
+          CodeUri: ./graphql_api/queries/productsByBrand.js
+        ###LISTA PRODOTTI
+        productsList:
+          Runtime:
+            Name: APPSYNC_JS
+            Version: 1.0.0
+          DataSource: ProductsDataSource
+          CodeUri: ./graphql_api/queries/productsList.js
+        ###INSERIMENTO/AGGIORNAMENTO BRAND
+        updateBrand:
+          Runtime:
+            Name: APPSYNC_JS
+            Version: 1.0.0
+          DataSource: ProductsDataSource
+          CodeUri: ./graphql_api/mutations/updateBrand.js
+        ###INSERIMENTO/AGGIORNAMENTO PRODOTTO
+        updateProduct:
+          Runtime:
+            Name: APPSYNC_JS
+            Version: 1.0.0
+          DataSource: ProductsDataSource
+          CodeUri: ./graphql_api/mutations/updateProduct.js
+      Resolvers:
+        Mutation:
+          updateBrand:
+            Runtime:
+              Name: APPSYNC_JS
+              Version: 1.0.0
+            Pipeline:
+              - updateBrand
+          updateProduct:
+            Runtime:
+              Name: APPSYNC_JS
+              Version: 1.0.0
+            Pipeline:
+              - updateProduct
+        Query:
+          brandsList:
+            Runtime:
+              Name: APPSYNC_JS
+              Version: 1.0.0
+            Pipeline:
+              - brandsList
+          getProduct:
+            Runtime:
+              Name: APPSYNC_JS
+              Version: 1.0.0
+            Pipeline:
+              - getProduct
+          productsByBrand:
+            Runtime:
+              Name: APPSYNC_JS
+              Version: 1.0.0
+            Pipeline:
+              - productsByBrand
+          productsList:
+            Runtime:
+              Name: APPSYNC_JS
+              Version: 1.0.0
+            Pipeline:
+              - productsList
+      SchemaUri: ./graphql_api/schema.graphql
+      XrayEnabled: false

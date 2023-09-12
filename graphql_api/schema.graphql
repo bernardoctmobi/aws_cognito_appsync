@@ -1,0 +1,35 @@
+schema {
+    query: Query
+    mutation: Mutation
+}
+
+type Product {
+    PK: String!
+    SK: String!
+    Type: String
+    Price: Float
+}
+
+type Brand {
+    PK: String!
+    SK: String!
+    LastModified: String
+}
+
+type Mutation {
+    updateProduct(SK: String!, Type: String, Price: Float): Product!
+        @aws_auth(cognito_groups: ["Admins"])
+    updateBrand(SK: String!): Brand!
+        @aws_auth(cognito_groups: ["Admins"])
+}
+
+type Query {
+    productsList: [Product]!
+        @aws_auth(cognito_groups: ["Admins", "Users"])
+    getProduct(SK: String!): Product!
+        @aws_auth(cognito_groups: ["Admins", "Users"])
+    productsByBrand(SK: String!): [Product]!
+        @aws_auth(cognito_groups: ["Admins", "Users"])
+    brandsList: [Brand]!
+        @aws_auth(cognito_groups: ["Admins", "Users"])
+}

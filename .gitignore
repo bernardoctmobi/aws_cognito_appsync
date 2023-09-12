@@ -1,0 +1,5 @@
+.aws-sam/
+
+graphql_api/node_modules/
+
+samconfig.toml
