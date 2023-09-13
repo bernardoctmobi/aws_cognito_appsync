@@ -17,8 +17,23 @@ Resources:
   AppsyncApiPool:
     Type: AWS::Cognito::UserPool
     Properties:
+      # LambdaConfig:
+      #   CustomMessage: !GetAtt CustomMessageLambda.Arn
       MfaConfiguration: "OFF"
       UserPoolName: AppsyncApiPool
+
+  CustomMessageLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: msg.handler
+      Runtime: nodejs18.x
+      Events:
+        NewUserEvent:
+          Type: Cognito
+          Properties:
+            Trigger: CustomMessage
+            UserPool: !Ref AppsyncApiPool
 
   PoolClient:
     Type: AWS::Cognito::UserPoolClient

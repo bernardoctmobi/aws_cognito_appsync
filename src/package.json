@@ -1,0 +1,8 @@
+{
+    "name": "app_name",
+    "version": "1.0.0",
+    "main": "app.js",
+    "author": "SAM CLI",
+    "license": "MIT",
+    "dependencies": {}
+}
